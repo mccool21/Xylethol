@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Alert {
+  id            String   @id @default(cuid())
+  title         String
+  body          String
+  isEnabled     Boolean  @default(true) @map("is_enabled")
+  isActiveFrom  DateTime @map("is_active_from")
+  isActiveTo    DateTime @map("is_active_to")
+  theme         String   @default("default") // "default", "minimal", "modern"
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // Segmentation fields
+  targetingEnabled Boolean @default(false) @map("targeting_enabled")
+  targetSegments   AlertSegment[]
+  
+  @@map("alerts")
+}
+
+model AlertSegment {
+  id          String @id @default(cuid())
+  alertId     String @map("alert_id")
+  alert       Alert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  
+  // Segmentation criteria
+  userType    String?   @map("user_type")      // "premium", "free", "trial", "enterprise"
+  location    String?   @map("location")       // Country/region code
+  accountAge  String?   @map("account_age")    // "new", "established", "veteran" (0-30, 31-365, 365+ days)
+  activityLevel String? @map("activity_level") // "high", "medium", "low" (based on usage)
+  planTier    String?   @map("plan_tier")      // "basic", "pro", "enterprise", "custom"
+  
+  // Page targeting criteria
+  targetPage  String?   @map("target_page")    // Specific page/route to show alert on (null = show on all pages)
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@map("alert_segments")
+}
+
+model UserProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id") // External user identifier
+  userType      String?  @map("user_type")
+  location      String?  @map("location")
+  accountAge    String?  @map("account_age")
+  activityLevel String?  @map("activity_level")
+  planTier      String?  @map("plan_tier")
+  
+  // Metadata
+  lastSeen      DateTime? @map("last_seen")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  @@map("user_profiles")
+}
+
+model FeatureToggle {
+  id            String   @id @default(cuid())
+  name          String   @unique // Feature identifier (e.g., "new_dashboard", "beta_checkout")
+  displayName   String   @map("display_name") // Human readable name
+  description   String?  // Description of what this feature does
+  isEnabled     Boolean  @default(true) @map("is_enabled") // Global enable/disable
+  
+  // Environment controls
+  environment   String   @default("all") // "development", "staging", "production", "all"
+  
+  // Rollout strategy
+  rolloutPercentage Int   @default(100) @map("rollout_percentage") // 0-100, gradual rollout
+  
+  // Feature lifecycle
+  isActiveFrom  DateTime @default(now()) @map("is_active_from")
+  isActiveTo    DateTime @default("2099-12-31T23:59:59.999Z") @map("is_active_to") // Far future default
+  
+  // Targeting
+  targetingEnabled Boolean @default(false) @map("targeting_enabled")
+  targetSegments   FeatureSegment[]
+  
+  // Metadata
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     String?  @map("created_by") // User who created this toggle
+  
+  @@map("feature_toggles")
+}
+
+model FeatureSegment {
+  id            String @id @default(cuid())
+  featureId     String @map("feature_id")
+  feature       FeatureToggle @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  
+  // Same segmentation criteria as alerts
+  userType      String?   @map("user_type")      // "premium", "free", "trial", "enterprise"
+  location      String?   @map("location")       // Country/region code
+  accountAge    String?   @map("account_age")    // "new", "established", "veteran"
+  activityLevel String?   @map("activity_level") // "high", "medium", "low"
+  planTier      String?   @map("plan_tier")      // "basic", "pro", "enterprise", "custom"
+  targetPage    String?   @map("target_page")    // Specific page/route
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  @@map("feature_segments")
+}

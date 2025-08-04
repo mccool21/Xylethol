@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Toggle Library - Usage Examples</title>
+    <style>
+        /* CSS Variables for theming */
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-code: #f8f9fa;
+            --text-primary: #24292e;
+            --text-secondary: #586069;
+            --border-color: #e1e4e8;
+            --border-light: #eaecef;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            
+            /* Syntax highlighting - light theme */
+            --syntax-keyword: #d73a49;
+            --syntax-string: #032f62;
+            --syntax-comment: #6a737d;
+            --syntax-function: #6f42c1;
+            --syntax-property: #005cc5;
+            --syntax-value: #22863a;
+            --syntax-tag: #22863a;
+            --syntax-attribute: #6f42c1;
+        }
+        
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-code: #161b22;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --border-light: #21262d;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            
+            /* Syntax highlighting - dark theme */
+            --syntax-keyword: #ff7b72;
+            --syntax-string: #a5d6ff;
+            --syntax-comment: #8b949e;
+            --syntax-function: #d2a8ff;
+            --syntax-property: #79c0ff;
+            --syntax-value: #7ee787;
+            --syntax-tag: #7ee787;
+            --syntax-attribute: #d2a8ff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        header {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .example {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 2px 8px var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .example h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+        
+        .example p {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .code {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            position: relative;
+            box-shadow: 0 1px 3px var(--shadow-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* Syntax highlighting classes */
+        .code .keyword { color: var(--syntax-keyword); font-weight: 600; }
+        .code .string { color: var(--syntax-string); }
+        .code .comment { color: var(--syntax-comment); font-style: italic; }
+        .code .function { color: var(--syntax-function); }
+        .code .property { color: var(--syntax-property); }
+        .code .value { color: var(--syntax-value); }
+        .code .tag { color: var(--syntax-tag); }
+        .code .attribute { color: var(--syntax-attribute); }
+        
+        .code pre {
+            margin: 0;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .line {
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .line.indent-0 { padding-left: 0 !important; }
+        .line.indent-1 { padding-left: 20px !important; }
+        .line.indent-2 { padding-left: 40px !important; }
+        .line.indent-3 { padding-left: 60px !important; }
+        .line.indent-4 { padding-left: 80px !important; }
+        
+        .demo-buttons {
+            margin: 15px 0;
+        }
+        
+        .demo-buttons button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .demo-buttons button:hover {
+            background: #0052a3;
+        }
+        
+        .demo-buttons button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .feature-demo {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .feature-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .feature-status.enabled {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .feature-status.disabled {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        [data-theme="dark"] .feature-status.enabled {
+            background: #155724;
+            color: #d4edda;
+            border: 1px solid #28a745;
+        }
+        
+        [data-theme="dark"] .feature-status.disabled {
+            background: #721c24;
+            color: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+        
+        .loading {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark mode toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+        <span class="icon">🌙</span>
+        <span>Dark</span>
+    </button>
+
+    <div class="container">
+        <header>
+            <h1>Xylethol Widget Library - Feature Toggle Examples</h1>
+            <p>Control feature rollouts and functionality with the unified Xylethol widget.</p>
+        </header>
+
+        <div class="example">
+            <h3>1. Basic Usage - Auto Initialize</h3>
+            <p>The simplest way to use feature toggles. Just include the script and provide configuration:</p>
+            <div class="code">
+                <span class="tag">&lt;script</span> <span class="attribute">src</span>=<span class="string">"xylethol-widget.js"</span> 
+                        <span class="attribute">data-xylethol-config</span>=<span class="string">'{
+                    "features": {
+                        "apiUrl": "http://localhost:3000/api/features/check",
+                        "userId": "user123",
+                        "debug": true
+                    }
+                }'</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;/script&gt;</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>2. Manual Initialization</h3>
+            <p>For more control, initialize the feature toggle client manually:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="tag">&lt;script</span> <span class="attribute">src</span>=<span class="string">"xylethol-widget.js"</span><span class="tag">&gt;&lt;/script&gt;</span></span>
+                <span class="line indent-0"><span class="tag">&lt;script&gt;</span></span>
+                <span class="line indent-1"><span class="comment">// Initialize when DOM is ready</span></span>
+                <span class="line indent-1"><span class="keyword">document</span>.<span class="function">addEventListener</span>(<span class="string">'DOMContentLoaded'</span>, <span class="keyword">function</span>() {</span>
+                <span class="line indent-2"><span class="keyword">window</span>.<span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-3"><span class="property">features</span>: {</span>
+                <span class="line indent-4"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/features/check'</span>,</span>
+                <span class="line indent-4"><span class="property">userId</span>: <span class="string">'user123'</span>,</span>
+                <span class="line indent-4"><span class="property">debug</span>: <span class="value">true</span></span>
+                <span class="line indent-3">},</span>
+                <span class="line indent-3"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-4"><span class="property">userType</span>: <span class="string">'premium'</span>,</span>
+                <span class="line indent-4"><span class="property">location</span>: <span class="string">'US'</span></span>
+                <span class="line indent-3">}</span>
+                <span class="line indent-2">});</span>
+                <span class="line indent-1">});</span>
+                <span class="line indent-0"><span class="tag">&lt;/script&gt;</span></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>3. Checking Feature Status</h3>
+            <p>Different ways to check if features are enabled:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Check single feature</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">isEnabled</span> = <span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">checkFeature</span>(<span class="string">'new_dashboard'</span>);</span>
+                <span class="line indent-0"><span class="keyword">if</span> (<span class="value">isEnabled</span>) {</span>
+                <span class="line indent-1"><span class="comment">// Show new dashboard</span></span>
+                <span class="line indent-1"><span class="keyword">document</span>.<span class="function">getElementById</span>(<span class="string">'new-dashboard'</span>).<span class="property">style</span>.<span class="property">display</span> = <span class="string">'block'</span>;</span>
+                <span class="line indent-0">}</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Check multiple features at once</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">features</span> = <span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">checkFeatures</span>([
+                <span class="line indent-1"><span class="string">'new_dashboard'</span>,</span>
+                <span class="line indent-1"><span class="string">'beta_checkout'</span>,</span>
+                <span class="line indent-1"><span class="string">'advanced_analytics'</span></span>
+                <span class="line indent-0">]);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="keyword">console</span>.<span class="function">log</span>(<span class="value">features</span>); <span class="comment">// { new_dashboard: true, beta_checkout: false, ... }</span></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>4. Live Demo - Feature Checking</h3>
+            <p>Test feature toggle functionality with different user attributes:</p>
+            <div class="demo-buttons">
+                <button onclick="initXylethol()">Initialize</button>
+                <button onclick="checkDemoFeatures()">Check Features</button>
+                <button onclick="toggleFeature('new_dashboard')">Toggle New Dashboard</button>
+                <button onclick="toggleFeature('premium_analytics')">Toggle Premium Analytics</button>
+                <button onclick="clearCache()">Clear Cache</button>
+            </div>
+            
+            <div class="feature-demo" id="feature-demo">
+                <p>Click "Initialize" to start the demo...</p>
+            </div>
+            
+            <!-- Feature-controlled demo sections -->
+            <div id="new-dashboard-section" class="feature-demo" style="display: none; background: #e7f3ff; border-left: 4px solid #0066cc;">
+                <h4 style="color: #0066cc; margin-top: 0;">🎛️ New Dashboard</h4>
+                <p>This is the <strong>new dashboard</strong> section that you've enabled</p>
+            </div>
+            
+            <div id="premium-analytics-section" class="feature-demo" style="display: none; background: #fff3e0; border-left: 4px solid #ff9800;">
+                <h4 style="color: #ff9800; margin-top: 0;">📊 Premium Analytics</h4>
+                <p>This is the <strong>premium analytics</strong> section that you've enabled</p>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>5. React Hook Usage</h3>
+            <p>Use the provided React hook for seamless integration:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="keyword">import</span> <span class="keyword">React</span> <span class="keyword">from</span> <span class="string">'react'</span>;</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">Dashboard</span>() {</span>
+                <span class="line indent-1"><span class="keyword">const</span> { <span class="value">isEnabled</span>, <span class="value">loading</span>, <span class="value">error</span> } = <span class="function">useXylethol</span>(<span class="string">'new_dashboard'</span>);</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">loading</span>) <span class="keyword">return</span> <span class="tag">&lt;div&gt;</span>Loading...<span class="tag">&lt;/div&gt;</span>;</span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">error</span>) <span class="keyword">return</span> <span class="tag">&lt;div&gt;</span>Error: {<span class="value">error</span>}<span class="tag">&lt;/div&gt;</span>;</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">return</span> (</span>
+                <span class="line indent-2"><span class="tag">&lt;div&gt;</span></span>
+                <span class="line indent-3">{<span class="value">isEnabled</span> ? (</span>
+                <span class="line indent-4"><span class="tag">&lt;NewDashboard</span> <span class="tag">/&gt;</span></span>
+                <span class="line indent-3">) : (</span>
+                <span class="line indent-4"><span class="tag">&lt;OldDashboard</span> <span class="tag">/&gt;</span></span>
+                <span class="line indent-3">)}</span>
+                <span class="line indent-2"><span class="tag">&lt;/div&gt;</span></span>
+                <span class="line indent-1">);</span>
+                <span class="line indent-0">}</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// With custom user attributes</span></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">PremiumFeature</span>() {</span>
+                <span class="line indent-1"><span class="keyword">const</span> { <span class="value">isEnabled</span> } = <span class="function">useXylethol</span>(<span class="string">'premium_analytics'</span>, {</span>
+                <span class="line indent-2"><span class="property">userType</span>: <span class="string">'premium'</span>,</span>
+                <span class="line indent-2"><span class="property">planTier</span>: <span class="string">'pro'</span></span>
+                <span class="line indent-1">});</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">return</span> <span class="value">isEnabled</span> ? <span class="tag">&lt;Analytics</span> <span class="tag">/&gt;</span> : <span class="value">null</span>;</span>
+                <span class="line indent-0">}</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>6. User Targeting Examples</h3>
+            <p>Configure different user segments to control feature access:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Initialize with user attributes</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/features/check'</span>,</span>
+                <span class="line indent-1"><span class="property">userId</span>: <span class="string">'user123'</span>,</span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-2"><span class="property">userType</span>: <span class="string">'premium'</span>,      <span class="comment">// 'free', 'trial', 'premium', 'enterprise'</span></span>
+                <span class="line indent-2"><span class="property">location</span>: <span class="string">'US'</span>,           <span class="comment">// 'US', 'CA', 'UK', 'EU', 'APAC', 'OTHER'</span></span>
+                <span class="line indent-2"><span class="property">accountAge</span>: <span class="string">'established'</span>, <span class="comment">// 'new', 'established', 'veteran'</span></span>
+                <span class="line indent-2"><span class="property">activityLevel</span>: <span class="string">'high'</span>,    <span class="comment">// 'high', 'medium', 'low'</span></span>
+                <span class="line indent-2"><span class="property">planTier</span>: <span class="string">'pro'</span>          <span class="comment">// 'basic', 'pro', 'enterprise', 'custom'</span></span>
+                <span class="line indent-1">},</span>
+                <span class="line indent-1"><span class="property">detectCurrentPage</span>: <span class="value">true</span> <span class="comment">// Automatically include current page</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user attributes dynamically</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserAttributes</span>({</span>
+                <span class="line indent-1"><span class="property">userType</span>: <span class="string">'enterprise'</span>,</span>
+                <span class="line indent-1"><span class="property">planTier</span>: <span class="string">'enterprise'</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user ID (affects percentage rollouts)</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserId</span>(<span class="string">'new-user-456'</span>);</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>7. Performance Optimization</h3>
+            <p>Optimize performance with caching and preloading:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Preload features for better performance</span></span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">preload</span>([</span>
+                <span class="line indent-1"><span class="string">'new_dashboard'</span>,</span>
+                <span class="line indent-1"><span class="string">'beta_checkout'</span>,</span>
+                <span class="line indent-1"><span class="string">'advanced_analytics'</span></span>
+                <span class="line indent-0">]);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Features are now cached and will load instantly</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">isNewDashboard</span> = <span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">check</span>(<span class="string">'new_dashboard'</span>); <span class="comment">// Cached!</span></span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Manual cache management</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">clearCache</span>(); <span class="comment">// Clear all cache</span></span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">refresh</span>(<span class="string">'new_dashboard'</span>); <span class="comment">// Refresh specific feature</span></span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Check cache statistics</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">stats</span> = <span class="property">Xylethol</span>.<span class="function">getCacheStats</span>();</span>
+                <span class="line indent-0"><span class="keyword">console</span>.<span class="function">log</span>(<span class="string">'Cache size:'</span>, <span class="value">stats</span>.<span class="property">size</span>);</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>8. Single Page Application (SPA) Support</h3>
+            <p>Handle route changes in SPAs for page-specific features:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// React Router example</span></span>
+                <span class="line indent-0"><span class="keyword">import</span> { <span class="property">useLocation</span> } <span class="keyword">from</span> <span class="string">'react-router-dom'</span>;</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">App</span>() {</span>
+                <span class="line indent-1"><span class="keyword">const</span> <span class="value">location</span> = <span class="function">useLocation</span>();</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">useEffect</span>(() => {</span>
+                <span class="line indent-2"><span class="comment">// Notify feature toggle system of page change</span></span>
+                <span class="line indent-2"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-1">}, [<span class="value">location</span>.<span class="property">pathname</span>]);</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="comment">// Rest of component...</span></span>
+                <span class="line indent-0">}</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Vue Router example</span></span>
+                <span class="line indent-0"><span class="keyword">router</span>.<span class="function">afterEach</span>(() => {</span>
+                <span class="line indent-1"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Manual page change notification</span></span>
+                <span class="line indent-0"><span class="keyword">window</span>.<span class="function">addEventListener</span>(<span class="string">'popstate'</span>, () => {</span>
+                <span class="line indent-1"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-0">});</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>9. API Reference</h3>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Initialize feature toggle client</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>(<span class="value">config</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Check single feature</span></span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">check</span>(<span class="string">'feature_name'</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Check multiple features</span></span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">checkFeatures</span>([<span class="string">'feature1'</span>, <span class="string">'feature2'</span>]);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Preload features</span></span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">preload</span>([<span class="string">'feature1'</span>, <span class="string">'feature2'</span>]);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user attributes</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserAttributes</span>({ <span class="property">userType</span>: <span class="string">'premium'</span> });</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user ID</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserId</span>(<span class="string">'user123'</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Cache management</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">clearCache</span>();</span>
+                <span class="line indent-0"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">refresh</span>(<span class="string">'feature_name'</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// SPA support</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Configuration update</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">updateConfig</span>({ <span class="property">debug</span>: <span class="value">true</span> });</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Cache statistics</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">getCacheStats</span>();</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>10. Production Setup</h3>
+            <p>Best practices for production deployment:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Production configuration</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'https://your-feature-api.com/api/features/check'</span>,</span>
+                <span class="line indent-1"><span class="property">environment</span>: <span class="string">'production'</span>,</span>
+                <span class="line indent-1"><span class="property">userId</span>: <span class="function">getUserId</span>(), <span class="comment">// From your auth system</span></span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: <span class="function">getUserAttributes</span>(), <span class="comment">// From your user data</span></span>
+                <span class="line indent-1"><span class="property">cacheTimeout</span>: <span class="value">300000</span>, <span class="comment">// 5 minutes</span></span>
+                <span class="line indent-1"><span class="property">debug</span>: <span class="value">false</span>,</span>
+                <span class="line indent-1"><span class="property">onError</span>: <span class="keyword">function</span>(<span class="value">message</span>, <span class="value">error</span>) {</span>
+                <span class="line indent-2"><span class="comment">// Log to your monitoring system</span></span>
+                <span class="line indent-2"><span class="keyword">console</span>.<span class="function">error</span>(<span class="string">'Xylethol Error:'</span>, <span class="value">message</span>, <span class="value">error</span>);</span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Preload critical features on app load</span></span>
+                <span class="line indent-0"><span class="keyword">document</span>.<span class="function">addEventListener</span>(<span class="string">'DOMContentLoaded'</span>, <span class="keyword">async</span> () => {</span>
+                <span class="line indent-1"><span class="keyword">await</span> <span class="property">Xylethol</span>.<span class="function">preload</span>([</span>
+                <span class="line indent-2"><span class="string">'new_navbar'</span>,</span>
+                <span class="line indent-2"><span class="string">'beta_features'</span>,</span>
+                <span class="line indent-2"><span class="string">'premium_content'</span></span>
+                <span class="line indent-1">]);</span>
+                <span class="line indent-0">});</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the xylethol widget library -->
+    <script src="xylethol-widget.js"></script>
+    
+    <script>
+        // Dark mode functionality
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update toggle button
+            const toggleBtn = document.getElementById('theme-toggle');
+            const icon = toggleBtn.querySelector('.icon');
+            const text = toggleBtn.querySelector('span:last-child');
+            
+            if (newTheme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark';
+            }
+        }
+        
+        // Initialize theme on page load
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const toggleBtn = document.getElementById('theme-toggle');
+                const icon = toggleBtn.querySelector('.icon');
+                const text = toggleBtn.querySelector('span:last-child');
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            }
+        }
+
+        // Demo functionality
+        let isInitialized = false;
+        let currentUserAttributes = {
+            userType: 'free',
+            location: 'US',
+            accountAge: 'new',
+            planTier: 'basic'
+        };
+        
+        // Local feature overrides for demo purposes
+        let featureOverrides = {
+            'new_dashboard': false,
+            'beta_checkout': false,
+            'premium_analytics': false,
+            'mobile_app': false
+        };
+
+        // Analytics helper function
+        function sendAnalyticsEvent(type, data) {
+            const event = {
+                id: `event_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+                type: type,
+                timestamp: new Date().toISOString(),
+                sessionId: `session_${Date.now()}`,
+                userId: 'demo-user-123',
+                featureName: data.featureName,
+                featureEnabled: data.featureEnabled,
+                userAttributes: data.userAttributes,
+                metadata: data.error ? { error: data.error } : undefined
+            };
+            
+            console.log('🚀 Sending feature analytics event:', event);
+            
+            // Send to analytics API
+            fetch('/api/analytics/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            })
+            .then(response => {
+                console.log('📊 Feature analytics response status:', response.status);
+                return response.json();
+            })
+            .then(result => {
+                console.log('✅ Feature analytics success:', result);
+            })
+            .catch(error => {
+                console.error('❌ Feature analytics tracking failed:', error);
+            });
+        }
+
+        function initXylethol() {
+            Xylethol.init({
+                features: {
+                    apiUrl: 'http://localhost:3000/api/features/check',
+                    userId: 'demo-user-123',
+                    debug: true
+                },
+                userAttributes: {
+                    ...currentUserAttributes,
+                    currentPage: window.location.pathname
+                },
+                onFeatureChange: function(features) {
+                    console.log('Demo: Features checked -', features);
+                    // Send to analytics API
+                    Object.entries(features).forEach(([featureName, enabled]) => {
+                        sendAnalyticsEvent('feature_check', {
+                            featureName: featureName,
+                            featureEnabled: enabled,
+                            userAttributes: this.instance.getUserAttributes()
+                        });
+                    });
+                },
+                onError: function(message, error) {
+                    console.log('Demo: API error or server not running, using fallback');
+                    // Send error to analytics
+                    sendAnalyticsEvent('feature_error', {
+                        error: message,
+                        userAttributes: this.instance?.getUserAttributes() || currentUserAttributes
+                    });
+                    // For demo purposes, show fallback features
+                }
+            });
+            
+            isInitialized = true;
+            updateDemo('Feature Toggle initialized! Click "Check Features" to test.');
+            updateFeatureSections(); // Initialize section visibility
+        }
+
+        async function checkDemoFeatures() {
+            if (!isInitialized) {
+                updateDemo('Please initialize first!');
+                return;
+            }
+
+            updateDemo('Checking features...');
+            
+            try {
+                const features = await Xylethol.checkFeatures([
+                    'new_dashboard',
+                    'beta_checkout',
+                    'premium_analytics',
+                    'mobile_app'
+                ]);
+                
+                // Apply local overrides for demo purposes
+                const finalFeatures = { ...features };
+                Object.keys(featureOverrides).forEach(feature => {
+                    if (featureOverrides[feature] !== null) {
+                        finalFeatures[feature] = featureOverrides[feature];
+                    }
+                });
+                
+                let html = '<h4>Feature Status:</h4>';
+                Object.entries(finalFeatures).forEach(([feature, enabled]) => {
+                    const status = enabled ? 'enabled' : 'disabled';
+                    const overrideIndicator = featureOverrides[feature] !== null ? ' (Demo Override)' : '';
+                    html += `<div>${feature}: <span class="feature-status ${status}">${status.toUpperCase()}</span>${overrideIndicator}</div>`;
+                });
+                
+                updateDemo(html);
+            } catch (error) {
+                // Fallback for demo when API isn't available - use our local overrides
+                let html = '<h4>Feature Status (Demo Mode):</h4>';
+                Object.entries(featureOverrides).forEach(([feature, enabled]) => {
+                    const status = enabled ? 'enabled' : 'disabled';
+                    html += `<div>${feature}: <span class="feature-status ${status}">${status.toUpperCase()}</span></div>`;
+                    
+                    // Send analytics for fallback feature checks
+                    sendAnalyticsEvent('feature_check', {
+                        featureName: feature,
+                        featureEnabled: enabled,
+                        userAttributes: {
+                            ...currentUserAttributes,
+                            currentPage: window.location.pathname
+                        }
+                    });
+                });
+                
+                updateDemo(html);
+            }
+        }
+
+        function toggleFeature(featureName) {
+            if (!isInitialized) {
+                updateDemo('Please initialize first!');
+                return;
+            }
+            
+            // Directly toggle the feature override
+            const currentState = featureOverrides[featureName];
+            featureOverrides[featureName] = !currentState;
+            
+            const newState = featureOverrides[featureName] ? 'enabled' : 'disabled';
+            updateDemo(`${featureName} is now ${newState}! Click "Check Features" to see the updated status.`);
+            
+            // Send analytics for feature toggle
+            sendAnalyticsEvent('feature_change', {
+                featureName: featureName,
+                featureEnabled: featureOverrides[featureName],
+                userAttributes: {
+                    ...currentUserAttributes,
+                    currentPage: window.location.pathname
+                }
+            });
+            
+            // Update the visual sections
+            updateFeatureSections();
+        }
+        
+        function updateFeatureSections() {
+            // Show/hide new dashboard section
+            const dashboardSection = document.getElementById('new-dashboard-section');
+            if (dashboardSection) {
+                dashboardSection.style.display = featureOverrides['new_dashboard'] ? 'block' : 'none';
+            }
+            
+            // Show/hide premium analytics section
+            const analyticsSection = document.getElementById('premium-analytics-section');
+            if (analyticsSection) {
+                analyticsSection.style.display = featureOverrides['premium_analytics'] ? 'block' : 'none';
+            }
+        }
+
+        function clearCache() {
+            if (!isInitialized) {
+                updateDemo('Please initialize first!');
+                return;
+            }
+
+            Xylethol.clearFeatureCache();
+            const stats = Xylethol.getFeatureCacheStats();
+            updateDemo(`Cache cleared! Cache size: ${stats.size}`);
+        }
+
+        function updateDemo(content) {
+            document.getElementById('feature-demo').innerHTML = content;
+        }
+
+        // Initialize with default theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+        });
+    </script>
+</body>
+</html>

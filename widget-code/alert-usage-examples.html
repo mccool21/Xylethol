@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Widget Examples</title>
+    <style>
+        /* CSS Variables for theming */
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-code: #f8f9fa;
+            --text-primary: #24292e;
+            --text-secondary: #586069;
+            --border-color: #e1e4e8;
+            --border-light: #eaecef;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            
+            /* Syntax highlighting - light theme */
+            --syntax-keyword: #d73a49;
+            --syntax-string: #032f62;
+            --syntax-comment: #6a737d;
+            --syntax-function: #6f42c1;
+            --syntax-property: #005cc5;
+            --syntax-value: #22863a;
+            --syntax-tag: #22863a;
+            --syntax-attribute: #6f42c1;
+        }
+        
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-code: #161b22;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --border-light: #21262d;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            
+            /* Syntax highlighting - dark theme */
+            --syntax-keyword: #ff7b72;
+            --syntax-string: #a5d6ff;
+            --syntax-comment: #8b949e;
+            --syntax-function: #d2a8ff;
+            --syntax-property: #79c0ff;
+            --syntax-value: #7ee787;
+            --syntax-tag: #7ee787;
+            --syntax-attribute: #d2a8ff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .theme-toggle .icon {
+            font-size: 16px;
+        }
+        
+        header {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        .example {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 2px 8px var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .example h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+        
+        .example p {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .code {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 16px 0;
+            position: relative;
+            box-shadow: 0 1px 3px var(--shadow-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* Syntax highlighting classes */
+        .code .keyword { color: var(--syntax-keyword); font-weight: 600; }
+        .code .string { color: var(--syntax-string); }
+        .code .comment { color: var(--syntax-comment); font-style: italic; }
+        .code .function { color: var(--syntax-function); }
+        .code .property { color: var(--syntax-property); }
+        .code .value { color: var(--syntax-value); }
+        .code .tag { color: var(--syntax-tag); }
+        .code .attribute { color: var(--syntax-attribute); }
+        
+        /* Enhanced typography */
+        .code pre {
+            margin: 0;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Line break styling */
+        .code .line {
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Indentation classes for code blocks - must come after .line to override */
+        .code .line.indent-0 { padding-left: 0 !important; }
+        .code .line.indent-1 { padding-left: 20px !important; }
+        .code .line.indent-2 { padding-left: 40px !important; }
+        .code .line.indent-3 { padding-left: 60px !important; }
+        .code .line.indent-4 { padding-left: 80px !important; }
+        .code .line.indent-5 { padding-left: 100px !important; }
+        
+        /* Copy button styling */
+        .code {
+            --copy-text: "Copy";
+        }
+        
+        .code::before {
+            content: var(--copy-text, "Copy");
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--text-secondary);
+            color: var(--bg-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, background-color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .code:hover::before {
+            opacity: 1;
+        }
+        
+        .code::before:hover {
+            background: var(--text-primary);
+        }
+        .demo-buttons {
+            margin: 15px 0;
+        }
+        .demo-buttons button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .demo-buttons button:hover {
+            background: #0052a3;
+        }
+        .content-area {
+            min-height: 200px;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: var(--text-secondary);
+            position: relative;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Demo alert styling */
+        #demo-alert-container, #targeting-alert-container {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .demo-alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .demo-alert.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .demo-alert.theme-default {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        [data-theme="dark"] .demo-alert.theme-default {
+            background: #3d1a1a;
+            border-color: #5a2828;
+            color: #f8d7da;
+        }
+        
+        .demo-alert.theme-minimal {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        
+        [data-theme="dark"] .demo-alert.theme-minimal {
+            background: #1a2d3d;
+            border-color: #285a5a;
+            color: #d1ecf1;
+        }
+        
+        .demo-alert.theme-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        [data-theme="dark"] .demo-alert.theme-modern {
+            background: linear-gradient(135deg, #4c63d2 0%, #5a3d8a 100%);
+            border-color: #4c63d2;
+            color: #f0f6fc;
+            box-shadow: 0 4px 15px rgba(76, 99, 210, 0.4);
+        }
+        
+        .demo-alert .alert-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .demo-alert .alert-body {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .demo-alert .alert-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .demo-alert .alert-close:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark mode toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+        <span class="icon">🌙</span>
+        <span>Dark</span>
+    </button>
+
+    <div class="container">
+        <header>
+            <h1>Xylethol Widget Library - Alert Examples</h1>
+            <p>Inject alerts from your Alert Manager into any website with the unified Xylethol widget.</p>
+        </header>
+
+        <div class="example">
+            <h3>1. Basic Usage - Auto Initialize</h3>
+            <p>The simplest way to use the widget. Just include the script and provide configuration in the script tag:</p>
+            <div class="code">
+                <span class="tag">&lt;script</span> <span class="attribute">src</span>=<span class="string">"xylethol-widget.js"</span> 
+                        <span class="attribute">data-xylethol-config</span>=<span class="string">'{
+                    "alerts": {
+                        "apiUrl": "http://localhost:3000/api/alerts/widget"
+                    }
+                }'</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;/script&gt;</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>2. Manual Initialization</h3>
+            <p>For more control, initialize the widget manually:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="tag">&lt;script</span> <span class="attribute">src</span>=<span class="string">"xylethol-widget.js"</span><span class="tag">&gt;&lt;/script&gt;</span></span>
+                <span class="line indent-0"><span class="tag">&lt;script&gt;</span></span>
+                <span class="line indent-1"><span class="comment">// Initialize when DOM is ready</span></span>
+                <span class="line indent-1"><span class="keyword">document</span>.<span class="function">addEventListener</span>(<span class="string">'DOMContentLoaded'</span>, <span class="keyword">function</span>() {</span>
+                <span class="line indent-2"><span class="keyword">window</span>.<span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-3"><span class="property">alerts</span>: {</span>
+                <span class="line indent-4"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-4"><span class="property">position</span>: <span class="string">'top'</span>,</span>
+                <span class="line indent-4"><span class="property">autoRefresh</span>: <span class="value">true</span>,</span>
+                <span class="line indent-4"><span class="property">refreshInterval</span>: <span class="value">30000</span></span>
+                <span class="line indent-3">}</span>
+                <span class="line indent-2">});</span>
+                <span class="line indent-1">});</span>
+                <span class="line indent-0"><span class="tag">&lt;/script&gt;</span></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>3. Configuration Options</h3>
+            <div class="code">
+                <span class="line indent-0"><span class="keyword">window</span>.<span class="property">Xylethol</span>.<span class="function">init</span>({
+                <span class="line indent-1"><span class="comment">// Alert configuration</span></span>
+                <span class="line indent-1"><span class="property">alerts</span>: {</span>
+                <span class="line indent-2"><span class="comment">// API endpoint (required)</span></span>
+                <span class="line indent-2"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-2"></span>
+                <span class="line indent-2"><span class="comment">// Container settings</span></span>
+                <span class="line indent-2"><span class="property">containerId</span>: <span class="string">'xylethol-alert-container'</span>,</span>
+                <span class="line indent-2"><span class="property">position</span>: <span class="string">'top'</span>, <span class="comment">// 'top', 'bottom', 'fixed-top', 'fixed-bottom'</span></span>
+                <span class="line indent-2"></span>
+                <span class="line indent-2"><span class="comment">// Appearance</span></span>
+                <span class="line indent-2"><span class="property">theme</span>: <span class="string">'default'</span>, <span class="comment">// 'default', 'minimal', 'modern'</span></span>
+                <span class="line indent-2"><span class="property">showCloseButton</span>: <span class="value">true</span>,</span>
+                <span class="line indent-2"></span>
+                <span class="line indent-2"><span class="comment">// Behavior</span></span>
+                <span class="line indent-2"><span class="property">autoRefresh</span>: <span class="value">false</span>,</span>
+                <span class="line indent-2"><span class="property">refreshInterval</span>: <span class="value">30000</span>, <span class="comment">// 30 seconds</span></span>
+                <span class="line indent-2"><span class="property">maxAlerts</span>: <span class="value">null</span>, <span class="comment">// null for unlimited</span></span>
+                <span class="line indent-2"></span>
+                <span class="line indent-2"><span class="comment">// Animation</span></span>
+                <span class="line indent-2"><span class="property">fadeInDuration</span>: <span class="value">300</span>,</span>
+                <span class="line indent-2"><span class="property">fadeOutDuration</span>: <span class="value">300</span>,</span>
+                <span class="line indent-1">},</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="comment">// User targeting (NEW)</span></span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-2"><span class="property">userType</span>: <span class="string">'premium'</span>,      <span class="comment">// 'free', 'trial', 'premium', 'enterprise'</span></span>
+                <span class="line indent-2"><span class="property">location</span>: <span class="string">'US'</span>,           <span class="comment">// 'US', 'CA', 'UK', 'EU', 'APAC', 'OTHER'</span></span>
+                <span class="line indent-2"><span class="property">accountAge</span>: <span class="string">'established'</span>, <span class="comment">// 'new', 'established', 'veteran'</span></span>
+                <span class="line indent-2"><span class="property">activityLevel</span>: <span class="string">'high'</span>,    <span class="comment">// 'high', 'medium', 'low'</span></span>
+                <span class="line indent-2"><span class="property">planTier</span>: <span class="string">'pro'</span>          <span class="comment">// 'basic', 'pro', 'enterprise', 'custom'</span></span>
+                <span class="line indent-1">},</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="comment">// Page targeting (NEW)</span></span>
+                <span class="line indent-1"><span class="property">detectCurrentPage</span>: <span class="value">true</span>, <span class="comment">// Automatically include current page in targeting</span></span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="comment">// Callbacks</span></span>
+                <span class="line indent-1"><span class="property">onAlertShow</span>: <span class="keyword">function</span>(<span class="value">alert</span>, <span class="value">element</span>) {</span>
+                <span class="line indent-2"><span class="keyword">console</span>.<span class="function">log</span>(<span class="string">'Alert shown:'</span>, <span class="value">alert</span>.<span class="property">title</span>);</span>
+                <span class="line indent-1">},</span>
+                <span class="line indent-1"><span class="property">onAlertHide</span>: <span class="keyword">function</span>(<span class="value">alertId</span>) {</span>
+                <span class="line indent-2"><span class="keyword">console</span>.<span class="function">log</span>(<span class="string">'Alert hidden:'</span>, <span class="value">alertId</span>);</span>
+                <span class="line indent-1">},</span>
+                <span class="line indent-1"><span class="property">onError</span>: <span class="keyword">function</span>(<span class="value">error</span>) {</span>
+                <span class="line indent-2"><span class="keyword">console</span>.<span class="function">error</span>(<span class="string">'Widget error:'</span>, <span class="value">error</span>);</span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0">});</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>4. Live Demo - Different Themes</h3>
+            <div class="demo-buttons">
+                <button onclick="initWidget('default')">Default Theme</button>
+                <button onclick="initWidget('minimal')">Minimal Theme</button>
+                <button onclick="initWidget('modern')">Modern Theme</button>
+                <button onclick="refreshWidget()">Refresh Alerts</button>
+                <button onclick="destroyWidget()">Destroy Widget</button>
+            </div>
+            
+            <div class="content-area" id="demo-area">
+                <div id="demo-alert-container"></div>
+                <p>This is your website content. Alerts will appear above this content.</p>
+                <p>Click the theme buttons above to see how alerts look with different visual styles.</p>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>5. Live Demo - User Targeting</h3>
+            <p>Test how alerts work with different user segments:</p>
+            <div class="demo-buttons">
+                <button onclick="testTargeting('new')">Test New User</button>
+                <button onclick="testTargeting('premium')">Test Premium User</button>
+                <button onclick="destroyWidget()">Clear Demo</button>
+            </div>
+            
+            <div class="content-area" id="targeting-demo-area">
+                <div id="targeting-alert-container"></div>
+                <p>This demo shows how user targeting works. Different alerts may appear based on user attributes.</p>
+                <p>Click the buttons above to simulate different user types.</p>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>6. Page Targeting Examples (NEW)</h3>
+            <p>Show alerts only on specific pages or routes:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Basic page targeting - auto-detect current page</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">detectCurrentPage</span>: <span class="value">true</span> <span class="comment">// Automatically include current page path</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Manual page specification</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-2"><span class="property">currentPage</span>: <span class="string">'/dashboard'</span> <span class="comment">// Only show alerts targeted to dashboard</span></span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// For Single Page Applications (SPAs)</span></span>
+                <span class="line indent-0"><span class="comment">// Call this when route changes</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>(); <span class="comment">// Refreshes alerts for new page</span></span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// React Router example</span></span>
+                <span class="line indent-0"><span class="keyword">import</span> { <span class="property">useLocation</span> } <span class="keyword">from</span> <span class="string">'react-router-dom'</span>;</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">useXylethol</span>() {</span>
+                <span class="line indent-1"><span class="keyword">const</span> <span class="value">location</span> = <span class="function">useLocation</span>();</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">useEffect</span>(() => {</span>
+                <span class="line indent-2"><span class="comment">// Update alerts when route changes</span></span>
+                <span class="line indent-2"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-1">}, [<span class="value">location</span>.<span class="property">pathname</span>]);</span>
+                <span class="line indent-0">}</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>7. User Targeting Examples</h3>
+            <p>Show different alerts to different user segments:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// For new users only</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-2"><span class="property">accountAge</span>: <span class="string">'new'</span></span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// For premium users in the US</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'http://localhost:3000/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: {</span>
+                <span class="line indent-2"><span class="property">userType</span>: <span class="string">'premium'</span>,</span>
+                <span class="line indent-2"><span class="property">location</span>: <span class="string">'US'</span></span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user attributes dynamically</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserAttributes</span>({</span>
+                <span class="line indent-1"><span class="property">userType</span>: <span class="string">'enterprise'</span>,</span>
+                <span class="line indent-1"><span class="property">planTier</span>: <span class="string">'enterprise'</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Remove targeting (show all alerts)</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserAttributes</span>(<span class="value">null</span>);</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>8. API Methods</h3>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Initialize widget</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>(<span class="value">config</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Manually refresh alerts</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">refresh</span>();</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Hide specific alert</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">hideAlert</span>(<span class="string">'alert-id'</span>);</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update configuration</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">updateConfig</span>({</span>
+                <span class="line indent-1"><span class="property">theme</span>: <span class="string">'modern'</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Update user attributes (NEW)</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">setUserAttributes</span>({</span>
+                <span class="line indent-1"><span class="property">userType</span>: <span class="string">'premium'</span>,</span>
+                <span class="line indent-1"><span class="property">location</span>: <span class="string">'US'</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Notify widget of page change (SPA support) (NEW)</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">onPageChange</span>();</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Destroy widget</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">destroy</span>();</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>9. Real-World Integration</h3>
+            <p>Example of how to integrate with your application's user system:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// Get user data from your application</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">currentUser</span> = <span class="function">getCurrentUser</span>(); <span class="comment">// Your app's user function</span></span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Calculate user attributes based on your data</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">userAttributes</span> = {</span>
+                <span class="line indent-1"><span class="property">userType</span>: <span class="value">currentUser</span>.<span class="property">subscription</span>?.<span class="property">type</span> || <span class="string">'free'</span>,</span>
+                <span class="line indent-1"><span class="property">location</span>: <span class="value">currentUser</span>.<span class="property">country</span> || <span class="string">'OTHER'</span>,</span>
+                <span class="line indent-1"><span class="property">accountAge</span>: <span class="function">calculateAccountAge</span>(<span class="value">currentUser</span>.<span class="property">createdAt</span>),</span>
+                <span class="line indent-1"><span class="property">activityLevel</span>: <span class="function">calculateActivityLevel</span>(<span class="value">currentUser</span>.<span class="property">lastActive</span>),</span>
+                <span class="line indent-1"><span class="property">planTier</span>: <span class="value">currentUser</span>.<span class="property">plan</span>?.<span class="property">tier</span> || <span class="string">'basic'</span></span>
+                <span class="line indent-0">};</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Initialize widget with targeting</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'https://your-xylethol-domain.com/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">userAttributes</span>: <span class="value">userAttributes</span>,</span>
+                <span class="line indent-1"><span class="property">position</span>: <span class="string">'fixed-top'</span>,</span>
+                <span class="line indent-1"><span class="property">theme</span>: <span class="string">'modern'</span></span>
+                <span class="line indent-0">});</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Helper functions</span></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">calculateAccountAge</span>(<span class="value">createdAt</span>) {</span>
+                <span class="line indent-1"><span class="keyword">const</span> <span class="value">days</span> = (<span class="keyword">Date</span>.<span class="function">now</span>() - <span class="keyword">new</span> <span class="keyword">Date</span>(<span class="value">createdAt</span>)) / (<span class="value">1000</span> * <span class="value">60</span> * <span class="value">60</span> * <span class="value">24</span>);</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">days</span> &lt;= <span class="value">30</span>) <span class="keyword">return</span> <span class="string">'new'</span>;</span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">days</span> &lt;= <span class="value">365</span>) <span class="keyword">return</span> <span class="string">'established'</span>;</span>
+                <span class="line indent-1"><span class="keyword">return</span> <span class="string">'veteran'</span>;</span>
+                <span class="line indent-0">}</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="keyword">function</span> <span class="function">calculateActivityLevel</span>(<span class="value">lastActive</span>) {</span>
+                <span class="line indent-1"><span class="keyword">const</span> <span class="value">hoursAgo</span> = (<span class="keyword">Date</span>.<span class="function">now</span>() - <span class="keyword">new</span> <span class="keyword">Date</span>(<span class="value">lastActive</span>)) / (<span class="value">1000</span> * <span class="value">60</span> * <span class="value">60</span>);</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">hoursAgo</span> &lt;= <span class="value">24</span>) <span class="keyword">return</span> <span class="string">'high'</span>;</span>
+                <span class="line indent-1"><span class="keyword">if</span> (<span class="value">hoursAgo</span> &lt;= <span class="value">168</span>) <span class="keyword">return</span> <span class="string">'medium'</span>; <span class="comment">// 1 week</span></span>
+                <span class="line indent-1"><span class="keyword">return</span> <span class="string">'low'</span>;</span>
+                <span class="line indent-0">}</span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>10. CSS Customization</h3>
+            <p>You can override the default styles by adding your own CSS:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="tag">&lt;style&gt;</span></span>
+                <span class="line indent-1"><span class="comment">/* Custom alert styles */</span></span>
+                <span class="line indent-1"><span class="property">.alert-item</span> {</span>
+                <span class="line indent-2"><span class="property">background</span>: <span class="function">linear-gradient</span>(<span class="value">45deg</span>, <span class="value">#ff6b6b</span>, <span class="value">#ee5a24</span>) <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">color</span>: <span class="value">white</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">border-radius</span>: <span class="value">25px</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="property">.alert-title</span> {</span>
+                <span class="line indent-2"><span class="property">font-size</span>: <span class="value">18px</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">text-shadow</span>: <span class="value">1px 1px 2px</span> <span class="function">rgba</span>(<span class="value">0, 0, 0, 0.3</span>);</span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-1"></span>
+                <span class="line indent-1"><span class="comment">/* Fixed position customization */</span></span>
+                <span class="line indent-1"><span class="property">.alert-widget.fixed-top</span> {</span>
+                <span class="line indent-2"><span class="property">max-width</span>: <span class="value">400px</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">right</span>: <span class="value">20px</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">left</span>: <span class="value">auto</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-2"><span class="property">transform</span>: <span class="value">none</span> <span class="keyword">!important</span>;</span>
+                <span class="line indent-1">}</span>
+                <span class="line indent-0"><span class="tag">&lt;/style&gt;</span></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>11. Production Setup</h3>
+            <p>For production, update your CORS settings and use HTTPS:</p>
+            <div class="code">
+                <span class="line indent-0"><span class="comment">// In pages/api/alerts/widget.ts, update CORS headers:</span></span>
+                <span class="line indent-0"><span class="keyword">const</span> <span class="value">corsHeaders</span> = {</span>
+                <span class="line indent-1"><span class="property">'Access-Control-Allow-Origin'</span>: <span class="string">'https://yourwebsite.com'</span>,</span>
+                <span class="line indent-1"><span class="property">'Access-Control-Allow-Methods'</span>: <span class="string">'GET, POST, OPTIONS'</span>,</span>
+                <span class="line indent-1"><span class="property">'Access-Control-Allow-Headers'</span>: <span class="string">'Content-Type, Authorization'</span></span>
+                <span class="line indent-0">};</span>
+                <span class="line indent-0"></span>
+                <span class="line indent-0"><span class="comment">// Initialize with production URL:</span></span>
+                <span class="line indent-0"><span class="property">Xylethol</span>.<span class="function">init</span>({</span>
+                <span class="line indent-1"><span class="property">apiUrl</span>: <span class="string">'https://your-alert-manager.com/api/alerts/widget'</span>,</span>
+                <span class="line indent-1"><span class="property">position</span>: <span class="string">'fixed-top'</span>,</span>
+                <span class="line indent-1"><span class="property">theme</span>: <span class="string">'modern'</span>,</span>
+                <span class="line indent-1"><span class="property">autoRefresh</span>: <span class="value">true</span>,</span>
+                <span class="line indent-1"><span class="property">refreshInterval</span>: <span class="value">60000</span> <span class="comment">// 1 minute</span></span>
+                <span class="line indent-0">});</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the xylethol widget library -->
+    <script src="xylethol-widget.js"></script>
+    
+    <script>
+        // Dark mode functionality
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update toggle button
+            const toggleBtn = document.getElementById('theme-toggle');
+            const icon = toggleBtn.querySelector('.icon');
+            const text = toggleBtn.querySelector('span:last-child');
+            
+            if (newTheme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark';
+            }
+        }
+        
+        // Initialize theme on page load
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const toggleBtn = document.getElementById('theme-toggle');
+                const icon = toggleBtn.querySelector('.icon');
+                const text = toggleBtn.querySelector('span:last-child');
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            }
+        }
+        
+        // Store current widget theme for demo alerts
+        let currentWidgetTheme = 'default';
+        
+        // Analytics helper function
+        function sendAnalyticsEvent(type, data) {
+            const event = {
+                id: `event_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+                type: type,
+                timestamp: new Date().toISOString(),
+                sessionId: `session_${Date.now()}`,
+                userId: 'demo-user',
+                alertId: data.alertId,
+                alertTitle: data.alertTitle,
+                alertTheme: data.alertTheme,
+                featureName: data.featureName,
+                featureEnabled: data.featureEnabled,
+                userAttributes: data.userAttributes,
+                metadata: data.error ? { error: data.error } : undefined
+            };
+            
+            console.log('🚀 Sending analytics event:', event);
+            
+            // Send to analytics API
+            fetch('/api/analytics/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            })
+            .then(response => {
+                console.log('📊 Analytics response status:', response.status);
+                return response.json();
+            })
+            .then(result => {
+                console.log('✅ Analytics success:', result);
+            })
+            .catch(error => {
+                console.error('❌ Analytics tracking failed:', error);
+            });
+        }
+        
+        function initWidget(theme) {
+            currentWidgetTheme = theme;
+            window.Xylethol.destroy();
+            clearDemoArea();
+            window.Xylethol.init({
+                alerts: {
+                    apiUrl: 'http://localhost:3000/api/alerts/widget',
+                    containerId: 'demo-alert-container',
+                    position: 'top',
+                    theme: theme,
+                    showCloseButton: true,
+                    autoRefresh: false
+                },
+                userAttributes: {
+                    userType: 'demo',
+                    location: 'US',
+                    planTier: 'free',
+                    currentPage: window.location.pathname
+                },
+                onAlertShow: function(alert) {
+                    console.log('Demo: Alert shown -', alert.title);
+                    // Send to analytics API
+                    sendAnalyticsEvent('alert_show', {
+                        alertId: alert.id,
+                        alertTitle: alert.title,
+                        alertTheme: alert.theme || theme,
+                        userAttributes: this.config.userAttributes
+                    });
+                },
+                onAlertHide: function(alertId) {
+                    console.log('Demo: Alert hidden -', alertId);
+                    // Send to analytics API
+                    sendAnalyticsEvent('alert_hide', {
+                        alertId: alertId,
+                        userAttributes: this.config.userAttributes
+                    });
+                },
+                onNoAlerts: function() {
+                    console.log('Demo: No alerts returned from API, showing demo alert');
+                    // Create a demo alert when API returns empty array
+                    createDemoAlert(theme);
+                },
+                onError: function(error) {
+                    console.log('Demo: API error or server not running');
+                    // Send error to analytics
+                    sendAnalyticsEvent('alert_error', {
+                        error: error.toString(),
+                        userAttributes: this.config.userAttributes
+                    });
+                    // Create a demo alert for testing
+                    createDemoAlert(theme);
+                }
+            });
+        }
+        
+        function testTargeting(userType) {
+            currentWidgetTheme = 'default';
+            window.Xylethol.destroy();
+            clearTargetingDemoArea();
+            const userAttributes = userType === 'new' 
+                ? { accountAge: 'new', userType: 'free', currentPage: window.location.pathname }
+                : { userType: 'premium', planTier: 'pro', currentPage: window.location.pathname };
+                
+            window.Xylethol.init({
+                alerts: {
+                    apiUrl: 'http://localhost:3000/api/alerts/widget',
+                    containerId: 'targeting-alert-container',
+                    position: 'top',
+                    theme: 'default',
+                    showCloseButton: true,
+                    autoRefresh: false
+                },
+                userAttributes: userAttributes,
+                onAlertShow: function(alert) {
+                    console.log('Demo: Targeted alert shown -', alert.title);
+                    // Send to analytics API
+                    sendAnalyticsEvent('alert_show', {
+                        alertId: alert.id,
+                        alertTitle: alert.title,
+                        alertTheme: 'default',
+                        userAttributes: this.config.userAttributes
+                    });
+                },
+                onAlertHide: function(alertId) {
+                    console.log('Demo: Targeted alert hidden -', alertId);
+                    // Send to analytics API
+                    sendAnalyticsEvent('alert_hide', {
+                        alertId: alertId,
+                        userAttributes: this.config.userAttributes
+                    });
+                },
+                onNoAlerts: function() {
+                    console.log('Demo: No targeted alerts returned from API, showing demo alert');
+                    createTargetingDemoAlert('targeted-' + userType);
+                },
+                onError: function(error) {
+                    console.log('Demo: API error or server not running');
+                    // Send error to analytics
+                    sendAnalyticsEvent('alert_error', {
+                        error: error.toString(),
+                        userAttributes: this.config.userAttributes
+                    });
+                    createTargetingDemoAlert('targeted-' + userType);
+                }
+            });
+        }
+
+        function createDemoAlert(theme) {
+            // Create a demo alert when the API is not available
+            const container = document.getElementById('demo-alert-container');
+            if (!container) return;
+            
+            let title, body, actualTheme;
+            
+            if (theme.startsWith('targeted-')) {
+                const userType = theme.replace('targeted-', '');
+                title = `Demo Targeted Alert - ${userType.charAt(0).toUpperCase() + userType.slice(1)} Users`;
+                body = `This alert would only show to ${userType} users. In production, this would come from your Alert Manager API with user targeting.`;
+                actualTheme = currentWidgetTheme; // Use the current theme for targeted alerts
+            } else {
+                actualTheme = theme;
+                title = `Demo Alert - ${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme`;
+                body = `This is a demonstration alert showing the ${theme} theme. In production, this would come from your Alert Manager API.`;
+            }
+            
+            const demoAlert = {
+                id: `demo-${Date.now()}`,
+                title: title,
+                body: body
+            };
+            
+            console.log('Creating demo alert with theme:', actualTheme); // Debug log
+            
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert-item demo-alert theme-${actualTheme}`;
+            alertElement.dataset.alertId = demoAlert.id;
+            alertElement.innerHTML = `
+                <h4 class="alert-title">${demoAlert.title}</h4>
+                <p class="alert-body">${demoAlert.body}</p>
+                <button class="alert-close" onclick="hideDemoAlert('${demoAlert.id}')">&times;</button>
+            `;
+            
+            container.appendChild(alertElement);
+            setTimeout(() => {
+                alertElement.classList.add('show');
+                // Manually trigger analytics for demo alert
+                sendAnalyticsEvent('alert_show', {
+                    alertId: demoAlert.id,
+                    alertTitle: demoAlert.title,
+                    alertTheme: actualTheme,
+                    userAttributes: {
+                        userType: 'demo',
+                        location: 'US',
+                        planTier: 'free',
+                        currentPage: window.location.pathname
+                    }
+                });
+            }, 50);
+        }
+
+        function clearDemoArea() {
+            const container = document.getElementById('demo-alert-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }
+
+        function clearTargetingDemoArea() {
+            const container = document.getElementById('targeting-alert-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }
+
+        function createTargetingDemoAlert(theme) {
+            // Create a demo alert for targeting when the API is not available
+            const container = document.getElementById('targeting-alert-container');
+            if (!container) return;
+            
+            const userType = theme.replace('targeted-', '');
+            const title = `Demo Targeted Alert - ${userType.charAt(0).toUpperCase() + userType.slice(1)} Users`;
+            const body = `This alert would only show to ${userType} users. In production, this would come from your Alert Manager API with user targeting.`;
+            
+            const demoAlert = {
+                id: `demo-${Date.now()}`,
+                title: title,
+                body: body
+            };
+            
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert-item demo-alert theme-default`;
+            alertElement.dataset.alertId = demoAlert.id;
+            alertElement.innerHTML = `
+                <h4 class="alert-title">${demoAlert.title}</h4>
+                <p class="alert-body">${demoAlert.body}</p>
+                <button class="alert-close" onclick="hideDemoAlert('${demoAlert.id}')">&times;</button>
+            `;
+            
+            container.appendChild(alertElement);
+            setTimeout(() => alertElement.classList.add('show'), 50);
+        }
+
+        function refreshWidget() {
+            window.Xylethol.refreshAlerts();
+        }
+
+        function destroyWidget() {
+            window.Xylethol.destroy();
+            clearDemoArea();
+            clearTargetingDemoArea();
+        }
+        
+        function hideDemoAlert(alertId) {
+            const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+            if (alertElement) {
+                alertElement.remove();
+                // Trigger analytics for demo alert dismissal
+                sendAnalyticsEvent('alert_hide', {
+                    alertId: alertId,
+                    userAttributes: {
+                        userType: 'demo',
+                        location: 'US',
+                        planTier: 'free',
+                        currentPage: window.location.pathname
+                    }
+                });
+            }
+        }
+
+        // Initialize with default theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dark mode
+            initializeTheme();
+            
+            // Don't auto-initialize to let users test manually
+            
+            // Add copy functionality to code blocks
+            const codeBlocks = document.querySelectorAll('.code');
+            codeBlocks.forEach(function(block) {
+                block.addEventListener('click', function(e) {
+                    if (e.target === block || e.target.closest('.code') === block) {
+                        const text = block.textContent || block.innerText;
+                        navigator.clipboard.writeText(text).then(function() {
+                            const originalContent = block.style.setProperty('--copy-text', '"Copied!"');
+                            setTimeout(function() {
+                                block.style.setProperty('--copy-text', '"Copy"');
+                            }, 2000);
+                        }).catch(function() {
+                            console.log('Copy failed');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

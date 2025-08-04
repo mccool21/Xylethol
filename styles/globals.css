@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* GitHub-style theme variables */
+:root {
+  --github-bg-primary: #f8f9fa;
+  --github-bg-secondary: #ffffff;
+  --github-bg-code: #f8f9fa;
+  --github-text-primary: #24292e;
+  --github-text-secondary: #586069;
+  --github-border: #e1e4e8;
+  --github-border-light: #eaecef;
+}
+
+.dark {
+  --github-bg-primary: #0d1117;
+  --github-bg-secondary: #161b22;
+  --github-bg-code: #161b22;
+  --github-text-primary: #f0f6fc;
+  --github-text-secondary: #8b949e;
+  --github-border: #30363d;
+  --github-border-light: #21262d;
+}
